@@ -512,10 +512,8 @@ section { padding: 6rem 4vw; }
   background: var(--lime);
   transition: width 0.4s;
 }
-.service-card:hover,
-.service-card.active { background: var(--dark3); }
-.service-card:hover::before,
-.service-card.active::before { width: 100%; }
+.service-card:hover { background: var(--dark3); }
+.service-card:hover::before { width: 100%; }
 
 .service-icon {
   font-size: 2.2rem;
@@ -524,8 +522,7 @@ section { padding: 6rem 4vw; }
   filter: grayscale(1) brightness(1.5);
   transition: filter 0.3s;
 }
-.service-card:hover .service-icon,
-.service-card.active .service-icon { filter: none; }
+.service-card:hover .service-icon { filter: none; }
 
 .service-num {
   font-family: var(--font-display);
@@ -536,8 +533,7 @@ section { padding: 6rem 4vw; }
   line-height: 1;
   transition: color 0.3s;
 }
-.service-card:hover .service-num,
-.service-card.active .service-num { color: rgba(184,240,0,0.15); }
+.service-card:hover .service-num { color: rgba(184,240,0,0.15); }
 
 .service-name {
   font-family: var(--font-display);
@@ -1459,52 +1455,58 @@ footer {
         </div>
       </div>
     </div>
-    <form class="contact-form reveal" id="quoteForm" onsubmit="handleSubmit(event)">
+    <form class="contact-form reveal" id="quoteForm" name="quote-request" netlify data-netlify="true" onsubmit="handleSubmit(event)">
+      <input type="hidden" name="form-name" value="quote-request" />
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="fname">First Name</label>
-          <input class="form-input" type="text" id="fname" placeholder="John" required />
+          <input class="form-input" type="text" id="fname" name="first-name" placeholder="John" required />
         </div>
         <div class="form-group">
           <label class="form-label" for="lname">Last Name</label>
-          <input class="form-input" type="text" id="lname" placeholder="Smith" required />
+          <input class="form-input" type="text" id="lname" name="last-name" placeholder="Smith" required />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="email">Email</label>
-          <input class="form-input" type="email" id="email" placeholder="john@example.com" required />
+          <input class="form-input" type="email" id="email" name="email" placeholder="john@example.com" required />
         </div>
         <div class="form-group">
           <label class="form-label" for="phone">Phone</label>
-          <input class="form-input" type="tel" id="phone" placeholder="082 000 0000" />
+          <input class="form-input" type="tel" id="phone" name="phone" placeholder="082 000 0000" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="vehicle">Vehicle (Make &amp; Model)</label>
-          <input class="form-input" type="text" id="vehicle" placeholder="Toyota Corolla 2020" />
+          <input class="form-input" type="text" id="vehicle" name="vehicle" placeholder="Toyota Corolla 2020" />
         </div>
         <div class="form-group">
           <label class="form-label" for="service">Service Required</label>
-          <select class="form-select" id="service">
+          <select class="form-select" id="service" name="service">
             <option value="">— Select —</option>
             <option>Panel Beating</option>
             <option>Spray Painting</option>
             <option>Structural Repair</option>
             <option>Insurance Claim</option>
             <option>Detailing &amp; Polish</option>
+            <option>Air-Con Re-Gassing</option>
+            <option>Rust Proofing &amp; Rubberising</option>
+            <option>Windscreen</option>
+            <option>Towing</option>
+            <option>Sticker Removal</option>
             <option>Other</option>
           </select>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label" for="message">Describe the Damage</label>
-        <textarea class="form-textarea" id="message" placeholder="Tell us about the damage or work needed…"></textarea>
+        <textarea class="form-textarea" id="message" name="message" placeholder="Tell us about the damage or work needed…"></textarea>
       </div>
       <div id="formMsg" style="display:none;font-family:var(--font-cond);font-size:0.9rem;letter-spacing:0.08em;color:var(--lime);"></div>
       <button type="submit" class="btn-primary form-submit">Send Request →</button>
-      <p class="form-note">// Submissions go to admin@ducorbodyworks.co.za &nbsp;·&nbsp; We respond within one business day</p>
+      <p class="form-note">// We respond within one business day</p>
     </form>
   </div>
 </section>
@@ -1573,19 +1575,33 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.12 });
 reveals.forEach(r => observer.observe(r));
 
-/* service card touch highlight for mobile */
-document.querySelectorAll('.service-card').forEach(card => {
-  card.addEventListener('touchstart', () => card.classList.add('active'), { passive: true });
-  card.addEventListener('touchend', () => setTimeout(() => card.classList.remove('active'), 300), { passive: true });
-});
-
 /* form submit */
 function handleSubmit(e) {
   e.preventDefault();
+  const form = e.target;
   const msg = document.getElementById('formMsg');
-  msg.style.display = 'block';
-  msg.textContent = '✓ Request sent! We\'ll be in touch within one business day.';
-  e.target.reset();
+  const btn = form.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  fetch('/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(new FormData(form)).toString()
+  })
+  .then(() => {
+    msg.style.display = 'block';
+    msg.textContent = '✓ Request sent! We\'ll be in touch within one business day.';
+    form.reset();
+    btn.disabled = false;
+    btn.textContent = 'Send Request →';
+  })
+  .catch(() => {
+    msg.style.display = 'block';
+    msg.style.color = '#ff4444';
+    msg.textContent = '✗ Something went wrong. Please call us on 041 451 4614.';
+    btn.disabled = false;
+    btn.textContent = 'Send Request →';
+  });
 }
 </script>
 </body>
