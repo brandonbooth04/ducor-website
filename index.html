@@ -512,8 +512,10 @@ section { padding: 6rem 4vw; }
   background: var(--lime);
   transition: width 0.4s;
 }
-.service-card:hover { background: var(--dark3); }
-.service-card:hover::before { width: 100%; }
+.service-card:hover,
+.service-card.active { background: var(--dark3); }
+.service-card:hover::before,
+.service-card.active::before { width: 100%; }
 
 .service-icon {
   font-size: 2.2rem;
@@ -522,7 +524,8 @@ section { padding: 6rem 4vw; }
   filter: grayscale(1) brightness(1.5);
   transition: filter 0.3s;
 }
-.service-card:hover .service-icon { filter: none; }
+.service-card:hover .service-icon,
+.service-card.active .service-icon { filter: none; }
 
 .service-num {
   font-family: var(--font-display);
@@ -533,7 +536,8 @@ section { padding: 6rem 4vw; }
   line-height: 1;
   transition: color 0.3s;
 }
-.service-card:hover .service-num { color: rgba(184,240,0,0.15); }
+.service-card:hover .service-num,
+.service-card.active .service-num { color: rgba(184,240,0,0.15); }
 
 .service-name {
   font-family: var(--font-display);
@@ -1568,6 +1572,12 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.12 });
 reveals.forEach(r => observer.observe(r));
+
+/* service card touch highlight for mobile */
+document.querySelectorAll('.service-card').forEach(card => {
+  card.addEventListener('touchstart', () => card.classList.add('active'), { passive: true });
+  card.addEventListener('touchend', () => setTimeout(() => card.classList.remove('active'), 300), { passive: true });
+});
 
 /* form submit */
 function handleSubmit(e) {
