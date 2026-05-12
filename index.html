@@ -1455,8 +1455,7 @@ footer {
         </div>
       </div>
     </div>
-    <form class="contact-form reveal" id="quoteForm" name="quote-request" netlify data-netlify="true" onsubmit="handleSubmit(event)">
-      <input type="hidden" name="form-name" value="quote-request" />
+    <form class="contact-form reveal" id="quoteForm" onsubmit="handleSubmit(event)">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="fname">First Name</label>
@@ -1583,15 +1582,20 @@ function handleSubmit(e) {
   const btn = form.querySelector('button[type="submit"]');
   btn.disabled = true;
   btn.textContent = 'Sending…';
-  fetch('/', {
+  fetch('https://formspree.io/f/mykoooza', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(new FormData(form)).toString()
+    headers: { 'Accept': 'application/json' },
+    body: new FormData(form)
   })
-  .then(() => {
-    msg.style.display = 'block';
-    msg.textContent = '✓ Request sent! We\'ll be in touch within one business day.';
-    form.reset();
+  .then(res => {
+    if (res.ok) {
+      msg.style.display = 'block';
+      msg.style.color = 'var(--lime)';
+      msg.textContent = '✓ Request sent! We\'ll be in touch within one business day.';
+      form.reset();
+    } else {
+      throw new Error();
+    }
     btn.disabled = false;
     btn.textContent = 'Send Request →';
   })
